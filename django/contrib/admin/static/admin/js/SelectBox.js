@@ -12,13 +12,15 @@ var SelectBox = {
     redisplay: function(id) {
         // Repopulate HTML select box from cache
         var box = document.getElementById(id);
-        box.options.length = 0; // clear all options
+        box.innerHTML = ''; // clear all options
+        var fragment = document.createDocumentFragment();
         for (var i = 0, j = SelectBox.cache[id].length; i < j; i++) {
             var node = SelectBox.cache[id][i];
             if (node.displayed) {
-                box.options[box.options.length] = new Option(node.text, node.value, false, false);
+                fragment.appendChild(new Option(node.text, node.value, false, false));
             }
         }
+        box.appendChild(fragment.cloneNode(true));
     },
     filter: function(id, text) {
         // Redisplay the HTML select box, displaying only the choices containing ALL
@@ -30,24 +32,20 @@ var SelectBox = {
             for (var j = 0; (token = tokens[j]); j++) {
                 if (node.text.toLowerCase().indexOf(token) == -1) {
                     node.displayed = 0;
+                    break;
                 }
             }
         }
         SelectBox.redisplay(id);
     },
     delete_from_cache: function(id, value) {
-        var node, delete_index = null;
+        var node;
         for (var i = 0; (node = SelectBox.cache[id][i]); i++) {
             if (node.value == value) {
-                delete_index = i;
+                SelectBox.cache[id].splice(i, 1)
                 break;
             }
         }
-        var j = SelectBox.cache[id].length - 1;
-        for (var i = delete_index; i < j; i++) {
-            SelectBox.cache[id][i] = SelectBox.cache[id][i+1];
-        }
-        SelectBox.cache[id].length--;
     },
     add_to_cache: function(id, option) {
         SelectBox.cache[id].push({value: option.value, text: option.text, displayed: 1});
